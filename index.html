@@ -1,30 +1,37 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <title>التحقق من نتيجة الطالب</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-  <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body {
       background-color: #f8f9fa;
     }
-    .result-box {
-      margin-top: 20px;
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-    #certificate {
-      display: none;
+    .certificate {
+      width: 100%;
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      border: 10px solid #0d6efd;
+      padding: 40px;
+      text-align: center;
       margin-top: 30px;
-      padding: 20px;
-      border: 2px dashed #0d6efd;
-      background-color: #ffffff;
+      display: none;
+    }
+    .certificate h2 {
+      font-size: 32px;
+      margin-bottom: 20px;
+      color: #0d6efd;
+    }
+    .certificate p {
+      font-size: 20px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -40,21 +47,18 @@
     <div class="col-md-6">
       <div class="card shadow-sm">
         <div class="card-body">
-          <div class="mb-3">
-            <input type="text" id="studentIdInput" class="form-control form-control-lg text-center" placeholder="رقم الطالب">
-          </div>
-          <div class="d-grid mb-3">
+          <input type="text" id="studentIdInput" class="form-control form-control-lg text-center mb-3" placeholder="رقم الطالب">
+          <div class="d-grid">
             <button class="btn btn-success btn-lg" onclick="checkResult()">
               <i class="fas fa-search"></i> تحقق
             </button>
           </div>
           <div id="result" class="alert mt-4 d-none" role="alert"></div>
-
           <div class="d-flex justify-content-between mt-4">
             <button class="btn btn-outline-primary w-50 me-2 d-none" id="printBtn" onclick="printCertificate()">
               <i class="fas fa-print"></i> طباعة الشهادة
             </button>
-            <button class="btn btn-outline-danger w-50 d-none" id="pdfBtn" onclick="savePDF()">
+            <button class="btn btn-outline-danger w-50 d-none" id="pdfBtn" onclick="downloadPDF()">
               <i class="fas fa-file-pdf"></i> حفظ PDF
             </button>
           </div>
@@ -63,35 +67,36 @@
     </div>
   </div>
 
-  <div id="certificate" class="text-center">
-    <h3>شهادة اجتياز اختبار</h3>
-    <p id="certContent"></p>
+  <!-- شهادة تظهر بعد النجاح -->
+  <div class="certificate" id="certificate">
+    <h2><i class="fas fa-award"></i> شهادة اجتياز اختبار</h2>
+    <p>نُشهد أن الطالب</p>
+    <p><strong id="studentName">[اسم الطالب]</strong></p>
+    <p>ورقم هويته <strong id="studentCode">[رقم الطالب]</strong></p>
+    <p>قد اجتاز بنجاح اختبار التقييم للعام الدراسي الحالي.</p>
   </div>
 </div>
-
-<!-- Google Charts -->
-<script src="https://www.gstatic.com/charts/loader.js"></script>
-<!-- jsPDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
   google.charts.load('current', {packages: ['table']});
   google.charts.setOnLoadCallback(() => {
-    console.log("Google Charts جاهز ✅");
+    console.log("Google Charts جاهز");
   });
 
   function checkResult() {
     const studentId = document.getElementById('studentIdInput').value.trim();
     const resultDiv = document.getElementById('result');
     const certDiv = document.getElementById('certificate');
-    const certText = document.getElementById('certContent');
+    const nameField = document.getElementById('studentName');
+    const idField = document.getElementById('studentCode');
     const printBtn = document.getElementById('printBtn');
     const pdfBtn = document.getElementById('pdfBtn');
 
     resultDiv.classList.add('d-none');
     resultDiv.innerHTML = '';
     certDiv.style.display = 'none';
-    certText.innerHTML = '';
+    nameField.innerText = '';
+    idField.innerText = '';
     printBtn.classList.add('d-none');
     pdfBtn.classList.add('d-none');
 
@@ -101,7 +106,7 @@
       return;
     }
 
-    const spreadsheetId = '13Wxrao8bnaHFbf7dcy28epoUI73LRSbku7CTbNUvIRc'; // ← استبدله بالمعرّف الصحيح
+    const spreadsheetId = '13Wxrao8bnaHFbf7dcy28epoUI73LRSbku7CTbNUvIRc'; // استبدله بالمعرف الصحيح
     const sheetName = 'Data';
     const queryUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?sheet=${sheetName}`;
     const query = new google.visualization.Query(queryUrl);
@@ -130,8 +135,9 @@
           if (status === 'مجتاز') {
             resultDiv.className = 'alert alert-success mt-4';
             resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> تهانينا ${name}، لقد <strong>اجتزت</strong> الاختبار ✅`;
+            nameField.innerText = name;
+            idField.innerText = id;
             certDiv.style.display = 'block';
-            certText.innerHTML = `نُشهد أن الطالب <strong>${name}</strong> (رقمه: ${id}) قد اجتاز بنجاح اختبار التقييم.`;
             printBtn.classList.remove('d-none');
             pdfBtn.classList.remove('d-none');
           } else {
@@ -152,27 +158,20 @@
   }
 
   function printCertificate() {
-    const printContent = document.getElementById('certificate').innerHTML;
-    const originalContent = document.body.innerHTML;
-    document.body.innerHTML = printContent;
     window.print();
-    document.body.innerHTML = originalContent;
-    location.reload();
   }
 
-  function savePDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  const text = document.getElementById("certContent").innerText;
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text("شهادة اجتياز اختبار", 105, 30, {align: "center"});
-  doc.setFontSize(12);
-  doc.text(text, 105, 50, {align: "center"});
-  doc.save("شهادة_الطالب.pdf");
-}
-
+  function downloadPDF() {
+    const element = document.getElementById("certificate");
+    const opt = {
+      margin: 0.5,
+      filename: 'شهادة_الطالب.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
+  }
 </script>
 
 </body>
