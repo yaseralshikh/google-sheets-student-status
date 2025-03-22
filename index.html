@@ -22,6 +22,7 @@
       margin-top: 20px;
       font-size: 18px;
       font-weight: bold;
+      color: #d8000c;
     }
   </style>
 </head>
@@ -48,18 +49,23 @@
         return;
       }
 
-      // 👇 استبدل هذا بـ ID الجدول العادي (وليس رابط النشر)
+      // استبدل هذا بـ ID الصحيح للجدول (وليس رابط نشر)
       const spreadsheetId = '13Wxrao8bnaHFbf7dcy28epoUI73LRSbku7CTbNUvIRc'; // مثال
       const sheetName = 'Data';
 
-      const query = new google.visualization.Query(
-        `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?sheet=${sheetName}`
-      );
+      const queryUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?sheet=${sheetName}`;
+      const query = new google.visualization.Query(queryUrl);
 
       query.send(function(response) {
         if (response.isError()) {
-          resultDiv.innerHTML = 'حدث خطأ أثناء تحميل البيانات.';
-          console.error('Error: ' + response.getMessage());
+          const errorMessage = `
+            ❌ حدث خطأ أثناء تحميل البيانات:<br>
+            <strong>الرسالة:</strong> ${response.getMessage()}<br>
+            <strong>التفاصيل:</strong> ${response.getDetailedMessage()}<br>
+            <strong>الرابط:</strong> <a href="${queryUrl}" target="_blank">${queryUrl}</a>
+          `;
+          resultDiv.innerHTML = errorMessage;
+          console.error('Google Sheets API Error:', response.getMessage(), response.getDetailedMessage());
           return;
         }
 
@@ -74,8 +80,10 @@
           if (id === studentId) {
             found = true;
             if (status === 'مجتاز') {
+              resultDiv.style.color = 'green';
               resultDiv.innerHTML = `تهانينا ${name}، لقد <strong>اجتزت</strong> الاختبار ✅`;
             } else {
+              resultDiv.style.color = '#d8000c';
               resultDiv.innerHTML = `عذرًا ${name}، لم تجتز الاختبار ❌`;
             }
             break;
@@ -90,4 +98,3 @@
   </script>
 </body>
 </html>
-
