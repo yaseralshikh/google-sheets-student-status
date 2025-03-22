@@ -21,8 +21,8 @@
       display: none;
     }
     .certificate img {
-      max-width: 160px;
-      margin-bottom: 20px;
+      width: 100px;
+      margin-bottom: 10px;
     }
     .certificate h2 {
       font-size: 28px;
@@ -68,7 +68,7 @@
 
 <!-- الشهادة -->
 <div id="certificate" class="certificate">
-  <img src="https://salogos.org/wp-content/uploads/2021/11/UntiTtled-1-1568x1192.png" alt="شعار وزارة التعليم" style="max-width: 180px; margin-bottom: 20px;">
+  <img src="https://salogos.org/wp-content/uploads/2021/11/UntiTtled-1-1568x1192.png" alt="شعار وزارة التعليم">
   <h2>📘 شهادة اجتياز اختبار</h2>
   <p>نُشهد أن الطالب</p>
   <p><strong id="studentName">[اسم الطالب]</strong></p>
@@ -79,8 +79,15 @@
 <script>
   google.charts.load('current', {packages: ['table']});
 
+  // تحويل الأرقام العربية إلى إنجليزية
+  function convertArabicToEnglish(str) {
+    const arNums = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    return str.replace(/[٠-٩]/g, d => arNums.indexOf(d));
+  }
+
   function checkResult() {
-    const studentId = document.getElementById('studentIdInput').value.trim();
+    let studentId = document.getElementById('studentIdInput').value.trim();
+    studentId = convertArabicToEnglish(studentId);
     const resultDiv = document.getElementById('result');
     const printBtn = document.getElementById('printBtn');
     const pdfBtn = document.getElementById('pdfBtn');
