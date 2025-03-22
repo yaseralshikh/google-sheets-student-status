@@ -157,17 +157,19 @@
     location.reload();
   }
 
-  async function savePDF() {
-    const {{ jsPDF }} = window.jspdf;
-    const doc = new jsPDF();
-    const text = document.getElementById("certContent").innerText;
-    doc.setFont("arabic", "bold");
-    doc.setFontSize(16);
-    doc.text("شهادة اجتياز اختبار", 105, 30, {align: "center"});
-    doc.setFontSize(12);
-    doc.text(text, 105, 50, {align: "center"});
-    doc.save("شهادة_الطالب.pdf");
-  }
+  function savePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const text = document.getElementById("certContent").innerText;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text("شهادة اجتياز اختبار", 105, 30, {align: "center"});
+  doc.setFontSize(12);
+  doc.text(text, 105, 50, {align: "center"});
+  doc.save("شهادة_الطالب.pdf");
+}
+
 </script>
 
 </body>
