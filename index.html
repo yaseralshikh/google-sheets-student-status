@@ -31,6 +31,25 @@
     .certificate p {
       font-size: 18px;
     }
+
+      @media print {
+      .certificate img {
+        width: 100px !important;
+        height: auto !important;
+        max-height: 80px !important;
+        object-fit: contain !important;
+      }
+    
+      body *:not(.certificate):not(.certificate *) {
+        display: none !important;
+      }
+    
+      .certificate {
+        display: block !important;
+        page-break-before: always;
+      }
+  }
+
   </style>
 </head>
 <body class="bg-light">
