@@ -1,100 +1,116 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <title>التحقق من نتيجة الطالب</title>
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
   <style>
     body {
-      font-family: 'Arial', sans-serif;
-      direction: rtl;
-      background-color: #f0f0f0;
-      text-align: center;
-      padding: 50px;
+      background-color: #f8f9fa;
     }
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      margin: 10px;
-      width: 250px;
-    }
-    #result {
+    .result-box {
       margin-top: 20px;
-      font-size: 18px;
+      font-size: 1.2rem;
       font-weight: bold;
-      color: #d8000c;
     }
   </style>
 </head>
 <body>
 
-  <h1>التحقق من اجتياز الاختبار</h1>
+<div class="container py-5">
+  <div class="text-center mb-4">
+    <h1 class="display-5 text-primary"><i class="fas fa-check-circle"></i> التحقق من اجتياز الاختبار</h1>
+    <p class="lead text-muted">أدخل رقم الطالب للتحقق من حالته</p>
+  </div>
 
-  <input type="text" id="studentIdInput" placeholder="أدخل رقم الطالب">
-  <br>
-  <button onclick="checkResult()">تحقق</button>
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="mb-3">
+            <input type="text" id="studentIdInput" class="form-control form-control-lg text-center" placeholder="رقم الطالب">
+          </div>
+          <div class="d-grid">
+            <button class="btn btn-success btn-lg" onclick="checkResult()">
+              <i class="fas fa-search"></i> تحقق
+            </button>
+          </div>
+          <div id="result" class="alert mt-4 d-none" role="alert"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-  <div id="result"></div>
+<!-- Google Charts -->
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script>
+  google.charts.load('current', {packages: ['table']});
 
-  <script>
-    google.charts.load('current', {packages: ['table']});
+  function checkResult() {
+    const studentId = document.getElementById('studentIdInput').value.trim();
+    const resultDiv = document.getElementById('result');
+    resultDiv.classList.add('d-none');
+    resultDiv.innerHTML = '';
 
-    function checkResult() {
-      const studentId = document.getElementById('studentIdInput').value.trim();
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML = 'جاري التحقق...';
+    if (!studentId) {
+      resultDiv.className = 'alert alert-warning mt-4';
+      resultDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> يرجى إدخال رقم الطالب';
+      return;
+    }
+    const spreadsheetId = '13Wxrao8bnaHFbf7dcy28epoUI73LRSbku7CTbNUvIRc'; // مثال
+    const sheetName = 'Data';
+    const queryUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?sheet=${sheetName}`;
+    const query = new google.visualization.Query(queryUrl);
 
-      if (!studentId) {
-        resultDiv.innerHTML = 'يرجى إدخال رقم الطالب';
+    query.send(function(response) {
+      if (response.isError()) {
+        resultDiv.className = 'alert alert-danger mt-4';
+        resultDiv.innerHTML = `
+          <i class="fas fa-times-circle"></i> حدث خطأ أثناء تحميل البيانات:<br>
+          <strong>الرسالة:</strong> ${response.getMessage()}<br>
+          <strong>التفاصيل:</strong> ${response.getDetailedMessage()}
+        `;
         return;
       }
 
-      // استبدل هذا بـ ID الصحيح للجدول (وليس رابط نشر)
-      const spreadsheetId = '13Wxrao8bnaHFbf7dcy28epoUI73LRSbku7CTbNUvIRc'; // مثال
-      const sheetName = 'Data';
+      const data = response.getDataTable();
+      let found = false;
 
-      const queryUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?sheet=${sheetName}`;
-      const query = new google.visualization.Query(queryUrl);
+      for (let i = 0; i < data.getNumberOfRows(); i++) {
+        const id = data.getValue(i, 0)?.toString().trim();
+        const name = data.getValue(i, 1);
+        const status = data.getValue(i, 2);
 
-      query.send(function(response) {
-        if (response.isError()) {
-          const errorMessage = `
-            ❌ حدث خطأ أثناء تحميل البيانات:<br>
-            <strong>الرسالة:</strong> ${response.getMessage()}<br>
-            <strong>التفاصيل:</strong> ${response.getDetailedMessage()}<br>
-            <strong>الرابط:</strong> <a href="${queryUrl}" target="_blank">${queryUrl}</a>
-          `;
-          resultDiv.innerHTML = errorMessage;
-          console.error('Google Sheets API Error:', response.getMessage(), response.getDetailedMessage());
-          return;
-        }
-
-        const data = response.getDataTable();
-        let found = false;
-
-        for (let i = 0; i < data.getNumberOfRows(); i++) {
-          const id = data.getValue(i, 0)?.toString().trim();
-          const name = data.getValue(i, 1);
-          const status = data.getValue(i, 2);
-
-          if (id === studentId) {
-            found = true;
-            if (status === 'مجتاز') {
-              resultDiv.style.color = 'green';
-              resultDiv.innerHTML = `تهانينا ${name}، لقد <strong>اجتزت</strong> الاختبار ✅`;
-            } else {
-              resultDiv.style.color = '#d8000c';
-              resultDiv.innerHTML = `عذرًا ${name}، لم تجتز الاختبار ❌`;
-            }
-            break;
+        if (id === studentId) {
+          found = true;
+          resultDiv.className = 'alert mt-4';
+          if (status === 'مجتاز') {
+            resultDiv.classList.add('alert-success');
+            resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> تهانينا ${name}، لقد <strong>اجتزت</strong> الاختبار ✅`;
+          } else {
+            resultDiv.classList.add('alert-danger');
+            resultDiv.innerHTML = `<i class="fas fa-times-circle"></i> عذرًا ${name}، لم تجتز الاختبار ❌`;
           }
+          break;
         }
+      }
 
-        if (!found) {
-          resultDiv.innerHTML = 'رقم الطالب غير موجود.';
-        }
-      });
-    }
-  </script>
+      if (!found) {
+        resultDiv.className = 'alert alert-warning mt-4';
+        resultDiv.innerHTML = '<i class="fas fa-info-circle"></i> رقم الطالب غير موجود.';
+      }
+
+      resultDiv.classList.remove('d-none');
+    });
+  }
+</script>
+
 </body>
 </html>
