@@ -19,6 +19,13 @@
       font-size: 1.2rem;
       font-weight: bold;
     }
+    #certificate {
+      display: none;
+      margin-top: 30px;
+      padding: 20px;
+      border: 2px dashed #0d6efd;
+      background-color: #ffffff;
+    }
   </style>
 </head>
 <body>
@@ -36,35 +43,62 @@
           <div class="mb-3">
             <input type="text" id="studentIdInput" class="form-control form-control-lg text-center" placeholder="رقم الطالب">
           </div>
-          <div class="d-grid">
+          <div class="d-grid mb-3">
             <button class="btn btn-success btn-lg" onclick="checkResult()">
               <i class="fas fa-search"></i> تحقق
             </button>
           </div>
           <div id="result" class="alert mt-4 d-none" role="alert"></div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <button class="btn btn-outline-primary w-50 me-2 d-none" id="printBtn" onclick="printCertificate()">
+              <i class="fas fa-print"></i> طباعة الشهادة
+            </button>
+            <button class="btn btn-outline-danger w-50 d-none" id="pdfBtn" onclick="savePDF()">
+              <i class="fas fa-file-pdf"></i> حفظ PDF
+            </button>
+          </div>
         </div>
       </div>
     </div>
+  </div>
+
+  <div id="certificate" class="text-center">
+    <h3>شهادة اجتياز اختبار</h3>
+    <p id="certContent"></p>
   </div>
 </div>
 
 <!-- Google Charts -->
 <script src="https://www.gstatic.com/charts/loader.js"></script>
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <script>
   google.charts.load('current', {packages: ['table']});
 
   function checkResult() {
     const studentId = document.getElementById('studentIdInput').value.trim();
     const resultDiv = document.getElementById('result');
+    const certDiv = document.getElementById('certificate');
+    const certText = document.getElementById('certContent');
+    const printBtn = document.getElementById('printBtn');
+    const pdfBtn = document.getElementById('pdfBtn');
+
     resultDiv.classList.add('d-none');
     resultDiv.innerHTML = '';
+    certDiv.style.display = 'none';
+    certText.innerHTML = '';
+    printBtn.classList.add('d-none');
+    pdfBtn.classList.add('d-none');
 
     if (!studentId) {
       resultDiv.className = 'alert alert-warning mt-4';
       resultDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> يرجى إدخال رقم الطالب';
       return;
     }
-    const spreadsheetId = '13Wxrao8bnaHFbf7dcy28epoUI73LRSbku7CTbNUvIRc'; // مثال
+
+    const spreadsheetId = '13Wxrao8bnaHFbf7dcy28epoUI73LRSbku7CTbNUvIRc'; // ← استبدله بالمعرّف الصحيح
     const sheetName = 'Data';
     const queryUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?sheet=${sheetName}`;
     const query = new google.visualization.Query(queryUrl);
@@ -90,12 +124,15 @@
 
         if (id === studentId) {
           found = true;
-          resultDiv.className = 'alert mt-4';
           if (status === 'مجتاز') {
-            resultDiv.classList.add('alert-success');
+            resultDiv.className = 'alert alert-success mt-4';
             resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> تهانينا ${name}، لقد <strong>اجتزت</strong> الاختبار ✅`;
+            certDiv.style.display = 'block';
+            certText.innerHTML = `نُشهد أن الطالب <strong>${name}</strong> (رقمه: ${id}) قد اجتاز بنجاح اختبار التقييم.`;
+            printBtn.classList.remove('d-none');
+            pdfBtn.classList.remove('d-none');
           } else {
-            resultDiv.classList.add('alert-danger');
+            resultDiv.className = 'alert alert-danger mt-4';
             resultDiv.innerHTML = `<i class="fas fa-times-circle"></i> عذرًا ${name}، لم تجتز الاختبار ❌`;
           }
           break;
@@ -109,6 +146,27 @@
 
       resultDiv.classList.remove('d-none');
     });
+  }
+
+  function printCertificate() {
+    const printContent = document.getElementById('certificate').innerHTML;
+    const originalContent = document.body.innerHTML;
+    document.body.innerHTML = printContent;
+    window.print();
+    document.body.innerHTML = originalContent;
+    location.reload();
+  }
+
+  async function savePDF() {
+    const {{ jsPDF }} = window.jspdf;
+    const doc = new jsPDF();
+    const text = document.getElementById("certContent").innerText;
+    doc.setFont("arabic", "bold");
+    doc.setFontSize(16);
+    doc.text("شهادة اجتياز اختبار", 105, 30, {align: "center"});
+    doc.setFontSize(12);
+    doc.text(text, 105, 50, {align: "center"});
+    doc.save("شهادة_الطالب.pdf");
   }
 </script>
 
