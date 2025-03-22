@@ -76,6 +76,9 @@
 
 <script>
   google.charts.load('current', {packages: ['table']});
+  google.charts.setOnLoadCallback(() => {
+    console.log("Google Charts جاهز ✅");
+  });
 
   function checkResult() {
     const studentId = document.getElementById('studentIdInput').value.trim();
