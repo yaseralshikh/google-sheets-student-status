@@ -37,39 +37,36 @@
 
   <script>
     google.charts.load('current', {packages: ['table']});
-
+  
     function checkResult() {
       const studentId = document.getElementById('studentIdInput').value.trim();
       const resultDiv = document.getElementById('result');
       resultDiv.innerHTML = 'جاري التحقق...';
-
+  
       if (!studentId) {
         resultDiv.innerHTML = 'يرجى إدخال رقم الطالب';
         return;
       }
-
-      const spreadsheetId = '2PACX-1vQSvA_ZsOdcu8Um3yjoMa7XoFTnwy_b_5q9mLtLp7PN5fVgUY88MQuXLhZ5ziL-Rro_Qstcw3UndGUy'; // ← استبدله بمعرف جدول البيانات الحقيقي
-      const sheetName = 'Data';
-
-      const query = new google.visualization.Query(
-        `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?sheet=${sheetName}`
-      );
-
+  
+      const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQSvA_ZsOdcu8Um3yjoMa7XoFTnwy_b_5q9mLtLp7PN5fVgUY88MQuXLhZ5ziL-Rro_Qstcw3UndGUy/gviz/tq?sheet=Data';
+  
+      const query = new google.visualization.Query(spreadsheetUrl);
+  
       query.send(function(response) {
         if (response.isError()) {
           resultDiv.innerHTML = 'حدث خطأ أثناء تحميل البيانات.';
           console.error('Error: ' + response.getMessage());
           return;
         }
-
+  
         const data = response.getDataTable();
         let found = false;
-
+  
         for (let i = 0; i < data.getNumberOfRows(); i++) {
-          const id = data.getValue(i, 0)?.toString().trim(); // العمود الأول: رقم الطالب
-          const name = data.getValue(i, 1); // العمود الثاني: الاسم
-          const status = data.getValue(i, 2); // العمود الثالث: النتيجة
-
+          const id = data.getValue(i, 0)?.toString().trim(); // رقم الطالب
+          const name = data.getValue(i, 1); // الاسم
+          const status = data.getValue(i, 2); // النتيجة
+  
           if (id === studentId) {
             found = true;
             if (status === 'مجتاز') {
@@ -80,13 +77,14 @@
             break;
           }
         }
-
+  
         if (!found) {
           resultDiv.innerHTML = 'رقم الطالب غير موجود.';
         }
       });
     }
   </script>
+  
 
 </body>
 </html>
