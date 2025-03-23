@@ -179,7 +179,7 @@
     }
 
     async function savePDF() {
-      const {{ jsPDF }} = window.jspdf;
+      const { jsPDF } = window.jspdf;
       const doc = new jsPDF({orientation: 'landscape', unit: 'pt', format: 'a4'});
       doc.html(document.getElementById("certificate"), {
         callback: function (doc) {
