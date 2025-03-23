@@ -76,9 +76,6 @@
     return input.replace(/[٠-٩]/g, (d) => arabicNumbers.indexOf(d).toString());
   }
   
-    return input.replace(/[٠-٩۰-۹]/g, (d) => arabicIndicMap[d] || d);
-  }
-  
   // ✅ الدالة الرئيسية للتحقق من رقم الطالب
   function checkResult() {
     // استرجاع الرقم المدخل وتحويله من عربي إلى إنجليزي إن لزم
