@@ -76,11 +76,24 @@
     return input.replace(/[٠-٩]/g, (d) => arabicNumbers.indexOf(d).toString());
   }
 
+  function normalizeDigits(input) {
+    // يحول الأرقام العربية والفارسية إلى أرقام إنجليزية
+    const arabicIndicMap = {
+      '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+      '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+      '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
+      '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9'
+    };
+  
+    return input.replace(/[٠-٩۰-۹]/g, (d) => arabicIndicMap[d] || d);
+  }
+  
   // ✅ الدالة الرئيسية للتحقق من رقم الطالب
   function checkResult() {
     // استرجاع الرقم المدخل وتحويله من عربي إلى إنجليزي إن لزم
     const rawInput = document.getElementById('studentIdInput').value.trim();
-    const studentId = convertArabicToEnglish(rawInput);
+    const studentId = normalizeDigits(rawInput);
+    console.log("Student ID after normalization:", studentId); // للاختبار
 
     // صندوق عرض النتيجة
     const resultDiv = document.getElementById('result');
@@ -92,7 +105,7 @@
       resultDiv.className = 'alert alert-warning mt-4';
       resultDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> يرجى إدخال رقم الطالب';
       return;
-    }
+  }
 
     // ✅ إعداد عنوان الجدول Google Sheet
     const spreadsheetId = '13Wxrao8bnaHFbf7dcy28epoUI73LRSbku7CTbNUvIRc'; // ضع ID الصحيح للجدول
