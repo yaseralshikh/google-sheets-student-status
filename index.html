@@ -61,11 +61,12 @@
   }
 
   function checkResult() {
-    const studentId = document.getElementById('studentIdInput').value.trim();
+    const rawInput = document.getElementById('studentIdInput').value.trim();
+    const studentId = convertArabicToEnglish(rawInput);
     const resultDiv = document.getElementById('result');
     resultDiv.classList.add('d-none');
     resultDiv.innerHTML = '';
-
+  
     if (!studentId) {
       resultDiv.className = 'alert alert-warning mt-4';
       resultDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> يرجى إدخال رقم الطالب';
