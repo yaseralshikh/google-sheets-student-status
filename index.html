@@ -2,195 +2,120 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>شهادة اجتياز اختبار</title>
+  <title>التحقق من نتيجة الطالب</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Bootstrap + Font Awesome -->
+
+  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
   <style>
     body {
       background-color: #f8f9fa;
     }
-    .certificate {
-      display: none;
-      margin-top: 30px;
-      padding: 40px;
-      border: 8px solid #3f70f4;
-      text-align: center;
-      font-family: 'Arial', sans-serif;
-      background-color: white;
-    }
-    .certificate h2 {
-      color: #3f70f4;
-    }
-    .certificate img {
-      width: 120px;
-      margin-bottom: 15px;
-    }
-    @media print {
-      .certificate img {
-        max-width: 150px !important;
-        max-height: 80px !important;
-        width: auto !important;
-        height: auto !important;
-        display: block !important;
-        margin: 0 auto 15px auto !important;
-      }
-      body * {
-        visibility: hidden !important;
-      }
-      .certificate, .certificate * {
-        visibility: visible !important;
-      }
-      .certificate {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        page-break-before: always;
-      }
+    .result-box {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
     }
   </style>
 </head>
-<body class="text-center p-4">
-  <h2 class="text-primary mb-4"><i class="fas fa-check-circle"></i> التحقق من اجتياز الاختبار</h2>
-  <p class="text-muted">أدخل رقم الطالب للتحقق من حالته</p>
+<body>
 
-  <input type="text" id="studentIdInput" class="form-control w-50 mx-auto mb-3 text-center" list="student-history" placeholder="رقم الطالب">
-  <datalist id="student-history"></datalist>
-
-  <button class="btn btn-success mb-3" onclick="checkResult()">
-    <i class="fas fa-search"></i> تحقق
-  </button>
-
-  <div id="result" class="mb-3"></div>
-
-  <div class="d-flex justify-content-center gap-2 mb-4">
-    <button class="btn btn-outline-primary d-none" id="printBtn" onclick="printCertificate()">
-      <i class="fas fa-print"></i> طباعة الشهادة
-    </button>
-    <button class="btn btn-outline-danger d-none" id="pdfBtn" onclick="savePDF()">
-      <i class="fas fa-file-pdf"></i> تحميل PDF
-    </button>
+<div class="container py-5">
+  <div class="text-center mb-4">
+    <h1 class="display-5 text-primary"><i class="fas fa-check-circle"></i> التحقق من اجتياز الاختبار</h1>
+    <p class="lead text-muted">أدخل رقم الطالب للتحقق من حالته</p>
   </div>
 
-  <div class="certificate" id="certificate">
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA..." alt="شعار وزارة التعليم">
-    <h2>📘 شهادة اجتياز اختبار</h2>
-    <p>نشهد أن الطالب</p>
-    <p><strong id="studentName">[اسم الطالب]</strong></p>
-    <p>ورقم هويته <strong id="studentCode">[رقم الطالب]</strong></p>
-    <p>قد اجتاز بنجاح اختبار التقييم للعام الدراسي الحالي.</p>
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="mb-3">
+            <input type="text" id="studentIdInput" class="form-control form-control-lg text-center" placeholder="رقم الطالب">
+          </div>
+          <div class="d-grid">
+            <button class="btn btn-success btn-lg" onclick="checkResult()">
+              <i class="fas fa-search"></i> تحقق
+            </button>
+          </div>
+          <div id="result" class="alert mt-4 d-none" role="alert"></div>
+        </div>
+      </div>
+    </div>
   </div>
+</div>
 
-  <script src="https://www.gstatic.com/charts/loader.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script>
-    google.charts.load('current', {packages: ['table']});
+<!-- Google Charts -->
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script>
+  google.charts.load('current', {packages: ['table']});
 
-    function convertArabicToEnglish(input) {
-      return input.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+  function convertArabicToEnglish(input) {
+    return input.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+  }
+
+  function checkResult() {
+    const studentId = document.getElementById('studentIdInput').value.trim();
+    const resultDiv = document.getElementById('result');
+    resultDiv.classList.add('d-none');
+    resultDiv.innerHTML = '';
+
+    if (!studentId) {
+      resultDiv.className = 'alert alert-warning mt-4';
+      resultDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> يرجى إدخال رقم الطالب';
+      return;
     }
 
-    function saveToHistory(id) {
-      let history = JSON.parse(localStorage.getItem('studentHistory') || "[]");
-      if (!history.includes(id)) {
-        history.push(id);
-        localStorage.setItem('studentHistory', JSON.stringify(history));
-        updateDatalist(history);
-      }
-    }
+    const spreadsheetId = '13Wxrao8bnaHFbf7dcy28epoUI73LRSbku7CTbNUvIRc'; // مثال
+    const sheetName = 'Data';
+    const queryUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?sheet=${sheetName}`;
+    const query = new google.visualization.Query(queryUrl);
 
-    function updateDatalist(history = null) {
-      const list = document.getElementById("student-history");
-      list.innerHTML = "";
-      const values = history || JSON.parse(localStorage.getItem('studentHistory') || "[]");
-      values.forEach(id => {
-        const option = document.createElement("option");
-        option.value = id;
-        list.appendChild(option);
-      });
-    }
-
-    function checkResult() {
-      let studentId = document.getElementById('studentIdInput').value.trim();
-      studentId = convertArabicToEnglish(studentId);
-      const resultDiv = document.getElementById('result');
-      const certDiv = document.getElementById('certificate');
-      const certName = document.getElementById('studentName');
-      const certCode = document.getElementById('studentCode');
-      const printBtn = document.getElementById('printBtn');
-      const pdfBtn = document.getElementById('pdfBtn');
-
-      resultDiv.innerHTML = '';
-      certDiv.style.display = 'none';
-      certName.innerHTML = '';
-      certCode.innerHTML = '';
-      printBtn.classList.add('d-none');
-      pdfBtn.classList.add('d-none');
-
-      if (!studentId) {
-        resultDiv.innerHTML = '<div class="alert alert-warning">يرجى إدخال رقم الطالب</div>';
+    query.send(function(response) {
+      if (response.isError()) {
+        resultDiv.className = 'alert alert-danger mt-4';
+        resultDiv.innerHTML = `
+          <i class="fas fa-times-circle"></i> حدث خطأ أثناء تحميل البيانات:<br>
+          <strong>الرسالة:</strong> ${response.getMessage()}<br>
+          <strong>التفاصيل:</strong> ${response.getDetailedMessage()}
+        `;
         return;
       }
 
-      const spreadsheetId = '13Wxrao8bnaHFbf7dcy28epoUI73LRSbku7CTbNUvIRc';
-      const query = new google.visualization.Query(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?sheet=Data`);
+      const data = response.getDataTable();
+      let found = false;
 
-      query.send(response => {
-        if (response.isError()) {
-          resultDiv.innerHTML = `<div class="alert alert-danger">حدث خطأ: ${response.getMessage()}</div>`;
-          return;
-        }
+      for (let i = 0; i < data.getNumberOfRows(); i++) {
+        const id = data.getValue(i, 0)?.toString().trim();
+        const name = data.getValue(i, 1);
+        const status = data.getValue(i, 2);
 
-        const data = response.getDataTable();
-        let found = false;
-
-        for (let i = 0; i < data.getNumberOfRows(); i++) {
-          const id = data.getValue(i, 0)?.toString().trim();
-          const name = data.getValue(i, 1);
-          const status = data.getValue(i, 2);
-
-          if (id === studentId) {
-            found = true;
-            saveToHistory(studentId);
-            if (status === 'مجتاز') {
-              resultDiv.innerHTML = `<div class="alert alert-success">تهانينا ${name}، لقد اجتزت الاختبار</div>`;
-              certDiv.style.display = 'block';
-              certName.innerText = name;
-              certCode.innerText = id;
-              printBtn.classList.remove('d-none');
-              pdfBtn.classList.remove('d-none');
-            } else {
-              resultDiv.innerHTML = `<div class="alert alert-danger">عذرًا ${name}، لم تجتز الاختبار</div>`;
-            }
-            break;
+        if (id === studentId) {
+          found = true;
+          resultDiv.className = 'alert mt-4';
+          if (status === 'مجتاز') {
+            resultDiv.classList.add('alert-success');
+            resultDiv.innerHTML = `<i class="fas fa-check-circle"></i> تهانينا ${name}، لقد <strong>اجتزت</strong> الاختبار ✅`;
+          } else {
+            resultDiv.classList.add('alert-danger');
+            resultDiv.innerHTML = `<i class="fas fa-times-circle"></i> عذرًا ${name}، لم تجتز الاختبار ❌`;
           }
+          break;
         }
+      }
 
-        if (!found) {
-          resultDiv.innerHTML = '<div class="alert alert-warning">رقم الطالب غير موجود</div>';
-        }
-      });
-    }
+      if (!found) {
+        resultDiv.className = 'alert alert-warning mt-4';
+        resultDiv.innerHTML = '<i class="fas fa-info-circle"></i> رقم الطالب غير موجود.';
+      }
 
-    function printCertificate() {
-      window.print();
-    }
+      resultDiv.classList.remove('d-none');
+    });
+  }
+</script>
 
-    async function savePDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({orientation: 'landscape', unit: 'pt', format: 'a4'});
-      doc.html(document.getElementById("certificate"), {
-        callback: function (doc) {
-          doc.save("شهادة_الطالب.pdf");
-        },
-        x: 20,
-        y: 20
-      });
-    }
-
-    updateDatalist();
-  </script>
 </body>
 </html>
