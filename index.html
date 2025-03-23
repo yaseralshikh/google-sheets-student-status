@@ -72,7 +72,8 @@
 
   // ✅ دالة لتحويل الأرقام العربية (٠-٩) إلى أرقام إنجليزية (0-9)
   function convertArabicToEnglish(input) {
-    return input.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+    const arabicNumbers = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    return input.replace(/[٠-٩]/g, (d) => arabicNumbers.indexOf(d).toString());
   }
 
   // ✅ الدالة الرئيسية للتحقق من رقم الطالب
