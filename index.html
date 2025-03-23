@@ -190,6 +190,43 @@
     };
     html2pdf().set(opt).from(cert).save().then(() => cert.style.display = 'none');
   }
+
+  // حفظ الإدخال في localStorage وتحديث القائمة
+function saveToHistory(id) {
+  let history = JSON.parse(localStorage.getItem('studentHistory') || "[]");
+  if (!history.includes(id)) {
+    history.push(id);
+    localStorage.setItem('studentHistory', JSON.stringify(history));
+    updateDatalist(history);
+  }
+}
+
+  // تحديث datalist من localStorage
+  function updateDatalist(history = null) {
+    const list = document.getElementById("student-history");
+    list.innerHTML = "";
+    const values = history || JSON.parse(localStorage.getItem('studentHistory') || "[]");
+    values.forEach(id => {
+      const option = document.createElement("option");
+      option.value = id;
+      list.appendChild(option);
+    });
+  }
+  
+  // عند التحقق، نحفظ الرقم
+  function checkResult() {
+    let studentId = document.getElementById('studentIdInput').value.trim();
+    studentId = convertArabicToEnglish(studentId);
+    
+    // ✅ حفظ الرقم بعد التحقق
+    if (studentId) saveToHistory(studentId);
+  
+    // ... تابع كود التحقق كالمعتاد ...
+  }
+    
+  // تحميل القائمة عند بداية الصفحة
+  updateDatalist();
+
 </script>
 
 </body>
