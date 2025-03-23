@@ -64,7 +64,9 @@
     <div class="col-md-6">
       <div class="card shadow-sm">
         <div class="card-body">
-          <input type="text" id="studentIdInput" class="form-control form-control-lg text-center mb-3" placeholder="رقم الطالب">
+          <input type="text" id="studentIdInput" class="form-control form-control-lg text-center mb-3"
+                 placeholder="رقم الطالب" list="student-history">
+          <datalist id="student-history"></datalist>
           <div class="d-grid">
             <button class="btn btn-success btn-lg" onclick="checkResult()">
               <i class="fas fa-search"></i> تحقق
